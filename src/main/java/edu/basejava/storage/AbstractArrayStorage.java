@@ -1,5 +1,8 @@
 package edu.basejava.storage;
 
+import edu.basejava.exception.ResumeExistStorageException;
+import edu.basejava.exception.ResumeNotExistStorageException;
+import edu.basejava.exception.StorageException;
 import edu.basejava.model.Resume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,23 +43,20 @@ public abstract class AbstractArrayStorage implements Storage {
 
         int searchKey = getSearchKey( uuid );
         if ( !isExist( searchKey ) ) {
-            LOG.error( format( RESUME_NOT_EXIST, uuid ) );
-            return null; // TODO must throw an exception
+            throw new ResumeNotExistStorageException( uuid );
         }
         return storage[searchKey];
     }
 
     @Override
     public void save( Resume resume ) {
-        LOG.debug( format( "Resume to save:\n%s", resume ) );
+        LOG.debug( "Resume to save:\n{}", resume );
 
         int searchKey = getSearchKey( resume.getUuid() );
         if ( size >= STORAGE_LIMIT ) {
-            LOG.error( format( "Storage overflow. Cannot save resume\n%s", resume ) );
-            return; // TODO must throw an exception
+            throw new StorageException( format( "Storage overflow. Cannot save resume\n%s", resume ) );
         } else if ( isExist( searchKey ) ) {
-            LOG.error( format( RESUME_ALREADY_EXIST, resume.getUuid() ) );
-            return; // TODO must throw an exception
+            throw new ResumeExistStorageException( format( RESUME_ALREADY_EXIST, resume.getUuid() ) );
         }
         setResume( resume, searchKey );
         size++;
@@ -64,12 +64,11 @@ public abstract class AbstractArrayStorage implements Storage {
 
     @Override
     public void update( Resume resume ) {
-        LOG.debug( format( "Resume to update by:\n%s", resume ) );
+        LOG.debug( "Resume to update by:\n{}", resume );
 
         int searchKey = getSearchKey( resume.getUuid() );
         if ( !isExist( searchKey ) ) {
-            LOG.error( format( RESUME_ALREADY_EXIST, resume.getUuid() ) );
-            return; // TODO must throw an exception
+            throw new ResumeNotExistStorageException( format( RESUME_ALREADY_EXIST, resume.getUuid() ) );
         }
         storage[searchKey] = resume;
     }
@@ -80,8 +79,7 @@ public abstract class AbstractArrayStorage implements Storage {
 
         int searchKey = getSearchKey( uuid );
         if ( !isExist( searchKey ) ) {
-            LOG.error( format( RESUME_NOT_EXIST, uuid ) );
-            return; // TODO must throw an exception
+            throw new ResumeNotExistStorageException( format( RESUME_NOT_EXIST, uuid ) );
         }
         removeResume( searchKey );
         storage[--size] = null;
