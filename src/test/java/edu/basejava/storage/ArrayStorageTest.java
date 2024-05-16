@@ -10,7 +10,7 @@ import static edu.basejava.storage.AbstractArrayStorage.STORAGE_LIMIT;
 
 public class ArrayStorageTest extends AbstractArrayStorageTest {
 
-    private static final Resume[] internalStorage = new Resume[AbstractArrayStorage.STORAGE_LIMIT];
+    private static final Resume[] internalStorage = new Resume[STORAGE_LIMIT];
     private static final int INITIAL_SIZE;
 
     static {

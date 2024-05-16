@@ -1,34 +1,26 @@
 package edu.basejava.storage;
 
-import edu.basejava.exception.ResumeExistStorageException;
-import edu.basejava.exception.ResumeNotExistStorageException;
 import edu.basejava.exception.StorageException;
 import edu.basejava.model.Resume;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static java.lang.String.format;
-
-public abstract class AbstractArrayStorage implements Storage {
-    private static final String RESUME_NOT_EXIST = "Resume (%s) doesn't exist";
-    private static final String RESUME_ALREADY_EXIST = "Resume (%s) already exists";
+public abstract class AbstractArrayStorage extends AbstractStorage<Integer> {
 
     // TODO load the limit from properties
     protected static final int STORAGE_LIMIT = 10000;
 
-    protected final Logger LOG = LoggerFactory.getLogger( AbstractArrayStorage.class );
     protected final Resume[] storage;
+
     protected int size = 0;
 
+    // for test purposes only
     public AbstractArrayStorage() {
         storage = new Resume[STORAGE_LIMIT];
     }
 
-    // for test purposes only
     protected AbstractArrayStorage( Resume[] storage ) {
         this.storage = storage;
         this.size = Arrays.stream( storage )
@@ -38,50 +30,27 @@ public abstract class AbstractArrayStorage implements Storage {
     }
 
     @Override
-    public Resume get( String uuid ) {
-        LOG.debug( uuid );
-
-        int searchKey = getSearchKey( uuid );
-        if ( !isExist( searchKey ) ) {
-            throw new ResumeNotExistStorageException( uuid );
-        }
-        return storage[searchKey];
+    protected Resume doGet( Integer index ) {
+        return storage[index];
     }
 
     @Override
-    public void save( Resume resume ) {
-        LOG.debug( "Resume to save:\n{}", resume );
-
-        int searchKey = getSearchKey( resume.getUuid() );
+    protected void doSave( Resume resume, Integer index ) {
         if ( size >= STORAGE_LIMIT ) {
-            throw new StorageException( format( "Storage overflow. Cannot save resume\n%s", resume ) );
-        } else if ( isExist( searchKey ) ) {
-            throw new ResumeExistStorageException( format( RESUME_ALREADY_EXIST, resume.getUuid() ) );
+            throw new StorageException( "Storage overflow" );
         }
-        setResume( resume, searchKey );
+        setResume( resume, index );
         size++;
     }
 
     @Override
-    public void update( Resume resume ) {
-        LOG.debug( "Resume to update by:\n{}", resume );
-
-        int searchKey = getSearchKey( resume.getUuid() );
-        if ( !isExist( searchKey ) ) {
-            throw new ResumeNotExistStorageException( format( RESUME_ALREADY_EXIST, resume.getUuid() ) );
-        }
-        storage[searchKey] = resume;
+    protected void doUpdate( Resume resume, Integer index ) {
+        storage[index] = resume;
     }
 
     @Override
-    public void delete( String uuid ) {
-        LOG.debug( uuid );
-
-        int searchKey = getSearchKey( uuid );
-        if ( !isExist( searchKey ) ) {
-            throw new ResumeNotExistStorageException( format( RESUME_NOT_EXIST, uuid ) );
-        }
-        removeResume( searchKey );
+    protected void doDelete( Integer index ) {
+        removeResume( index );
         storage[--size] = null;
     }
 
@@ -101,11 +70,13 @@ public abstract class AbstractArrayStorage implements Storage {
         return size;
     }
 
-    protected boolean isExist( int searchKey ) {
-        return searchKey >= 0;
+    @Override
+    protected boolean isExist( Integer index ) {
+        return index >= 0;
     }
 
-    protected abstract int getSearchKey( String uuid );
+    @Override
+    protected abstract Integer getSearchKey( String uuid );
 
     protected abstract void setResume( Resume resume, int index );
 

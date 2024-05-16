@@ -12,7 +12,7 @@ public class ArrayStorage extends AbstractArrayStorage {
     }
 
     @Override
-    protected int getSearchKey( String uuid ) {
+    protected Integer getSearchKey( String uuid ) {
         int key = -1;
         LOG.trace( "Looking for a searchKey through a cycle: " );
         for ( int i = 0; i < size; i++ ) {
@@ -22,7 +22,6 @@ public class ArrayStorage extends AbstractArrayStorage {
                 break;
             }
         }
-
         LOG.debug( "return searchKey: {}", key );
         return key;
     }

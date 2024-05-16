@@ -1,7 +1,6 @@
 import edu.basejava.model.Resume;
-import edu.basejava.storage.AbstractArrayStorage;
 import edu.basejava.storage.ArrayStorage;
-import edu.basejava.storage.SortedArrayStorage;
+import edu.basejava.storage.Storage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,7 +8,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 public class MainArray {
-    private final static AbstractArrayStorage ARRAY_STORAGE = new ArrayStorage();
+    private final static Storage ARRAY_STORAGE = new ArrayStorage();
 
     public static void main( String[] args ) throws IOException {
         try ( BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) ) ) {
