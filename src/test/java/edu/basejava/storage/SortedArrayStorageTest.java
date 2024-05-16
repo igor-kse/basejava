@@ -4,34 +4,28 @@ import edu.basejava.model.Resume;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.UUID;
-
-import static edu.basejava.storage.AbstractArrayStorage.STORAGE_LIMIT;
 
 public class SortedArrayStorageTest extends AbstractArrayStorageTest {
-    private static final Resume[] internalStorage = new Resume[AbstractArrayStorage.STORAGE_LIMIT];
-    private static final int INITIAL_SIZE;
 
-    static {
-        internalStorage[0] = resume1;
-        internalStorage[1] = resume2;
-        internalStorage[2] = resume3;
-        INITIAL_SIZE = 3;
+    public SortedArrayStorageTest() {
+        super( new Resume[]{resume1, resume2, resume3} );
     }
 
     @Override
-    protected SortedArrayStorage createInitialArrayBasedStorage() {
+    protected SortedArrayStorage createInitialStorage() {
         return new SortedArrayStorage( Arrays.copyOf( internalStorage, internalStorage.length ) );
     }
 
     @Override
-    protected SortedArrayStorage createInitialArrayBasedStorage( Resume[] internalStorage ) {
-        return new SortedArrayStorage( internalStorage );
+    protected SortedArrayStorage createInitialStorage( Resume[] internalStorage ) {
+        Resume[] resumes = new Resume[AbstractArrayStorage.STORAGE_LIMIT];
+        System.arraycopy( internalStorage, 0, resumes, 0, internalStorage.length );
+        return new SortedArrayStorage( resumes );
     }
 
     @Override
-    protected Resume[] getInitialInternalStorage() {
-        return Arrays.copyOf( internalStorage, AbstractArrayStorage.STORAGE_LIMIT );
+    protected Resume[] getInitiallySavedResumes() {
+        return Arrays.copyOf( internalStorage, getInitialStorageSize() );
     }
 
     @Override
@@ -39,13 +33,9 @@ public class SortedArrayStorageTest extends AbstractArrayStorageTest {
         return INITIAL_SIZE;
     }
 
+    @Override
     protected Resume[] createFilledInternalStorage() {
-        Resume[] internalStorage = new Resume[STORAGE_LIMIT];
-        for ( int i = 0; i < STORAGE_LIMIT; i++ ) {
-            Resume resume = new Resume();
-            resume.setUuid( UUID.randomUUID().toString() );
-            internalStorage[i] = resume;
-        }
+        Resume[] internalStorage = super.createFilledInternalStorage();
         Arrays.sort( internalStorage, Comparator.comparing( Resume::getUuid ) );
         return internalStorage;
     }
