@@ -151,7 +151,7 @@ public abstract class AbstractStorageTest {
         Assertions.assertThrows( ResumeNotExistStorageException.class, () -> storage.get( uuid ) );
     }
 
-    protected void assertSize(int size) {
+    protected void assertSize( int size ) {
         Assertions.assertEquals( size, storage.size() );
     }
 }

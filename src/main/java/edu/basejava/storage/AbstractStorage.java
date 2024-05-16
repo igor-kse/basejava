@@ -13,41 +13,43 @@ import java.util.List;
 @NoArgsConstructor
 public abstract class AbstractStorage<SK> implements Storage {
 
+    protected static final String RESUME_NOT_EXIST = "Resume (%s) doesn't exist";
+    protected static final String RESUME_ALREADY_EXIST = "Resume (%s) already exists";
     protected static final Comparator<Resume> RESUME_COMPARATOR =
             Comparator.comparing( Resume::getFullName, Comparator.naturalOrder() ).thenComparing( Resume::getUuid );
 
     protected final Logger LOG = LoggerFactory.getLogger( AbstractStorage.class );
 
     @Override
-    public Resume get( String uuid ) {
+    public final Resume get( String uuid ) {
         LOG.debug( uuid );
         SK searchKey = getExistingSearchKey( uuid );
         return doGet( searchKey );
     }
 
     @Override
-    public void save( Resume resume ) {
+    public final void save( Resume resume ) {
         LOG.debug( "Resume to save:\n{}", resume );
         SK searchKey = getNotExistingSearchKey( resume.getUuid() );
         doSave( resume, searchKey );
     }
 
     @Override
-    public void update( Resume resume ) {
+    public final void update( Resume resume ) {
         LOG.debug( "Resume to update by:\n{}", resume );
         SK searchKey = getExistingSearchKey( resume.getUuid() );
         doUpdate( resume, searchKey );
     }
 
     @Override
-    public void delete( String uuid ) {
+    public final void delete( String uuid ) {
         LOG.debug( uuid );
         SK searchKey = getExistingSearchKey( uuid );
         doDelete( searchKey );
     }
 
     @Override
-    public List<Resume> getAllSorted() {
+    public final List<Resume> getAllSorted() {
         List<Resume> resumes = getAll();
         resumes.sort( RESUME_COMPARATOR );
         return resumes;
@@ -56,7 +58,7 @@ public abstract class AbstractStorage<SK> implements Storage {
     protected SK getExistingSearchKey( String uuid ) {
         SK searchKey = getSearchKey( uuid );
         if ( !isExist( searchKey ) ) {
-            throw new ResumeNotExistStorageException( String.format( "Resume (%s) doesn't exist", uuid ) );
+            throw new ResumeNotExistStorageException( String.format( RESUME_NOT_EXIST, uuid ) );
         }
         return searchKey;
     }
@@ -64,7 +66,7 @@ public abstract class AbstractStorage<SK> implements Storage {
     protected SK getNotExistingSearchKey( String uuid ) {
         SK searchKey = getSearchKey( uuid );
         if ( isExist( searchKey ) ) {
-            throw new ResumeExistStorageException( String.format( "Resume (%s) already exists", uuid ) );
+            throw new ResumeExistStorageException( String.format( RESUME_ALREADY_EXIST, uuid ) );
         }
         return searchKey;
     }
