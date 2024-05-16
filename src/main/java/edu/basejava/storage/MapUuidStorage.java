@@ -1,23 +1,16 @@
 package edu.basejava.storage;
 
 import edu.basejava.model.Resume;
+import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class MapStorage extends AbstractStorage<String> {
-
-    private final Map<String, Resume> storage;
-
-    public MapStorage() {
-        storage = new HashMap<>();
-    }
+@NoArgsConstructor
+public class MapUuidStorage extends AbstractMapStorage<String> {
 
     // for test purposes only
-    protected MapStorage(Map<String, Resume> internalStorage) {
-        storage = internalStorage;
+    protected MapUuidStorage( Map<String, Resume> internalStorage ) {
+        super( internalStorage );
     }
 
     @Override
@@ -48,20 +41,5 @@ public class MapStorage extends AbstractStorage<String> {
     @Override
     protected void doDelete( String uuid ) {
         storage.remove( uuid );
-    }
-
-    @Override
-    public void clear() {
-        storage.clear();
-    }
-
-    @Override
-    public List<Resume> getAll() {
-        return new ArrayList<>( storage.values() );
-    }
-
-    @Override
-    public int size() {
-        return storage.size();
     }
 }
