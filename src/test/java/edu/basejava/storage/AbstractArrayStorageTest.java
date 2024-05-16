@@ -2,6 +2,7 @@ package edu.basejava.storage;
 
 import edu.basejava.exception.StorageException;
 import edu.basejava.model.Resume;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ public abstract class AbstractArrayStorageTest extends AbstractStorageTest {
     protected static final Resume[] internalStorage = new Resume[STORAGE_LIMIT];
     protected final int INITIAL_SIZE;
 
-    public AbstractArrayStorageTest(Resume[] initialValues) {
+    public AbstractArrayStorageTest( Resume[] initialValues ) {
         System.arraycopy( initialValues, 0, internalStorage, 0, initialValues.length );
         INITIAL_SIZE = initialValues.length;
     }
@@ -42,7 +43,7 @@ public abstract class AbstractArrayStorageTest extends AbstractStorageTest {
     @Test
     void saveOverflow() {
         storage = createFilledStorage();
-        Assertions.assertThrows( StorageException.class, () -> storage.save( resumeNotSaved ) );
+        Assertions.assertThrows( StorageException.class, () -> storage.save( new Resume( StringUtils.EMPTY ) ) );
     }
 
     protected Resume[] createFilledInternalStorage() {

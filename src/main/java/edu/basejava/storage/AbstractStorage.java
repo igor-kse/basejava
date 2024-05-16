@@ -7,8 +7,15 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
+import java.util.List;
+
 @NoArgsConstructor
 public abstract class AbstractStorage<SK> implements Storage {
+
+    protected static final Comparator<Resume> RESUME_COMPARATOR =
+            Comparator.comparing( Resume::getFullName, Comparator.naturalOrder() ).thenComparing( Resume::getUuid );
+
     protected final Logger LOG = LoggerFactory.getLogger( AbstractStorage.class );
 
     @Override
@@ -39,6 +46,13 @@ public abstract class AbstractStorage<SK> implements Storage {
         doDelete( searchKey );
     }
 
+    @Override
+    public List<Resume> getAllSorted() {
+        List<Resume> resumes = getAll();
+        resumes.sort( RESUME_COMPARATOR );
+        return resumes;
+    }
+
     protected SK getExistingSearchKey( String uuid ) {
         SK searchKey = getSearchKey( uuid );
         if ( !isExist( searchKey ) ) {
@@ -66,4 +80,6 @@ public abstract class AbstractStorage<SK> implements Storage {
     protected abstract void doUpdate( Resume resume, SK searchKey );
 
     protected abstract void doDelete( SK searchKey );
+
+    protected abstract List<Resume> getAll();
 }

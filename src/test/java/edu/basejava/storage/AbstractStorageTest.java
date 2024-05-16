@@ -3,12 +3,14 @@ package edu.basejava.storage;
 import edu.basejava.exception.ResumeExistStorageException;
 import edu.basejava.exception.ResumeNotExistStorageException;
 import edu.basejava.model.Resume;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static edu.basejava.storage.AbstractArrayStorage.STORAGE_LIMIT;
 
@@ -17,13 +19,14 @@ public abstract class AbstractStorageTest {
     protected static final String UUID_1 = "uuid1";
     protected static final String UUID_2 = "uuid2";
     protected static final String UUID_3 = "uuid3";
-    protected static final String UUID_4 = "uuid4";
+    protected static final String FULL_NAME_1 = "John Doe";
+    protected static final String FULL_NAME_2 = "Not John Doe";
+    protected static final String FULL_NAME_3 = "The John Doe";
     protected static final String UUID_NOT_EXISTING = "dummy";
 
-    protected static final Resume resume1 = new Resume( UUID_1 );
-    protected static final Resume resume2 = new Resume( UUID_2 );
-    protected static final Resume resume3 = new Resume( UUID_3 );
-    protected static final Resume resumeNotSaved = new Resume( UUID_4 );
+    protected static final Resume resume1 = new Resume( UUID_1, FULL_NAME_1 );
+    protected static final Resume resume2 = new Resume( UUID_2, FULL_NAME_2 );
+    protected static final Resume resume3 = new Resume( UUID_3, FULL_NAME_3 );
 
     protected Storage storage;
 
@@ -52,15 +55,12 @@ public abstract class AbstractStorageTest {
         Assertions.assertThrows( ResumeNotExistStorageException.class, () -> storage.get( UUID_NOT_EXISTING ) );
     }
 
-    private void assertGet( Resume resume ) {
-        Assertions.assertEquals( resume, storage.get( resume.getUuid() ) );
-    }
-
     @Test
     void save() {
-        storage.save( resumeNotSaved );
-        assertGet( resumeNotSaved );
-        Assertions.assertEquals( storage.size(), getInitialStorageSize() + 1 );
+        final Resume savingResume = new Resume( UUID_NOT_EXISTING, StringUtils.EMPTY );
+        storage.save( savingResume );
+        assertGet( savingResume );
+        assertSize( getInitialStorageSize() + 1 );
     }
 
     @Test
@@ -77,14 +77,8 @@ public abstract class AbstractStorageTest {
 
     @Test
     void updateNotExisting() {
-        Resume notExisting = new Resume( UUID_NOT_EXISTING );
+        Resume notExisting = new Resume( UUID_NOT_EXISTING, StringUtils.EMPTY );
         Assertions.assertThrows( ResumeNotExistStorageException.class, () -> storage.update( notExisting ) );
-    }
-
-    private void assertUpdate( String uuid ) {
-        Resume updated = new Resume( uuid );
-        storage.update( updated );
-        Assertions.assertSame( updated, storage.get( uuid ) );
     }
 
     @Test
@@ -98,14 +92,6 @@ public abstract class AbstractStorageTest {
         assertDelete( getInitialStorageSize(), UUID_3 );
     }
 
-    protected void assertDelete( int size, String uuid ) {
-        Assertions.assertNotNull( storage.get( uuid ) );
-        storage.delete( uuid );
-
-        Assertions.assertEquals( size - 1, storage.size() );
-        Assertions.assertThrows( ResumeNotExistStorageException.class, () -> storage.get( uuid ) );
-    }
-
     @Test
     void deleteNotExisting() {
         Assertions.assertThrows( ResumeNotExistStorageException.class, () -> storage.delete( UUID_NOT_EXISTING ) );
@@ -116,34 +102,56 @@ public abstract class AbstractStorageTest {
         Resume[] internalStorage = getInitiallySavedResumes();
         storage = createInitialStorage( internalStorage );
 
-        Assertions.assertEquals( getInitialStorageSize(), storage.size() );
+        assertSize( getInitialStorageSize() );
         storage.clear();
-        Assertions.assertEquals( 0, storage.size() );
-        Assertions.assertIterableEquals( Collections.emptyList(), storage.getAll() );
+        assertSize( 0 );
+        Assertions.assertIterableEquals( Collections.emptyList(), storage.getAllSorted() );
     }
 
     @Test
     void getAll() {
-        Resume[] internalStorage = getInitiallySavedResumes();
-        storage = createInitialStorage( internalStorage );
-        Assertions.assertIterableEquals( Arrays.asList( internalStorage ), storage.getAll() );
+        List<Resume> expected = Arrays.asList( getInitiallySavedResumes() );
+        expected.sort( AbstractStorage.RESUME_COMPARATOR );
+        Assertions.assertIterableEquals( expected, storage.getAllSorted() );
     }
 
     @Test
     void getAllEmptyStorage() {
         storage = createInitialStorage( new Resume[0] );
-        Assertions.assertIterableEquals( Collections.emptyList(), storage.getAll() );
+        Assertions.assertIterableEquals( Collections.emptyList(), storage.getAllSorted() );
     }
 
     @Test
     void size() {
         storage = createInitialStorage( getInitiallySavedResumes() );
-        Assertions.assertEquals( getInitialStorageSize(), storage.size() );
+        assertSize( getInitialStorageSize() );
     }
 
     @Test
     void sizeEmptyStorage() {
         storage = createInitialStorage( new Resume[STORAGE_LIMIT] );
-        Assertions.assertEquals( 0, storage.size() );
+        assertSize( 0 );
+    }
+
+    protected void assertGet( Resume resume ) {
+        Assertions.assertEquals( resume, storage.get( resume.getUuid() ) );
+    }
+
+    protected void assertUpdate( String uuid ) {
+        Resume updated = new Resume( uuid, StringUtils.EMPTY );
+        storage.update( updated );
+        Assertions.assertSame( updated, storage.get( uuid ) );
+    }
+
+    protected void assertDelete( int size, String uuid ) {
+        Assertions.assertNotNull( storage.get( uuid ) );
+        storage.delete( uuid );
+
+        Assertions.assertEquals( size - 1, storage.size() );
+        Assertions.assertThrows( ResumeNotExistStorageException.class, () -> storage.get( uuid ) );
+    }
+
+    protected void assertSize(int size) {
+        Assertions.assertEquals( size, storage.size() );
     }
 }

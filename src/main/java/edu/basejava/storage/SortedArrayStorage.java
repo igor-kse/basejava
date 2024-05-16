@@ -2,6 +2,7 @@ package edu.basejava.storage;
 
 import edu.basejava.model.Resume;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -16,7 +17,7 @@ public class SortedArrayStorage extends AbstractArrayStorage {
 
     @Override
     protected Integer getSearchKey( String uuid ) {
-        Resume searchKey = new Resume( uuid );
+        Resume searchKey = new Resume( uuid, StringUtils.EMPTY );
         return Arrays.binarySearch( storage, 0, size, searchKey, Comparator.comparing( Resume::getUuid ) );
     }
 
